@@ -1,0 +1,213 @@
+/* ================================== */
+/* === ARCHIVO: csspag/carrito-styles.css === */
+/* ================================== */
+
+/* Espaciador para la navbar fija, 
+  ya que esta página no tiene la sección 'hero'.
+  La altura de 80px es un estimado, ajústala si es necesario.
+*/
+.espaciador-navbar {
+    height: 80px; 
+}
+
+/* Estilos generales para el contenedor de la sombra 
+  Hereda el fondo de styles.css, pero forzamos color de texto
+*/
+.contenedor.sombra h2,
+.contenedor.sombra h3 {
+    color: var(--blanco);
+    border-bottom: 2px solid var(--primario); /* Usando el color primario de tu CSS */
+    padding-bottom: 1rem;
+    margin-top: 0;
+}
+
+/* Contenedor principal del carrito
+  Usamos flexbox para poner la lista de items y el resumen uno al lado del otro en desktop
+*/
+.carrito-container {
+    display: flex;
+    flex-direction: column; /* Apilado en móvil por defecto */
+    gap: 2rem;
+}
+
+/* La lista de items */
+.carrito-items {
+    flex: 3; /* Ocupa más espacio */
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* El resumen del pedido */
+.carrito-resumen {
+    flex: 1; /* Ocupa menos espacio */
+    background-color: #1a1a2e; /* Color de tus tarjetas NFT */
+    padding: 2rem;
+    border-radius: 1rem;
+    border: 1px solid #333;
+    height: fit-content; /* Para que no se estire verticalmente */
+    color: var(--blanco);
+}
+
+.carrito-resumen h3 {
+    margin-top: 0;
+}
+
+/* Estilos para cada item individual en el carrito
+*/
+.carrito-item {
+    background-color: #1a1a2e; /* Color de tus tarjetas NFT */
+    border: 1px solid #333;
+    border-radius: 1rem;
+    padding: 1rem;
+    display: flex;
+    flex-wrap: wrap; /* Permite que se reajuste en pantallas pequeñas */
+    align-items: center;
+    gap: 1.5rem;
+    color: var(--blanco);
+}
+
+.carrito-item-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 0.5rem;
+}
+
+.carrito-item-info {
+    flex: 1; /* Ocupa el espacio disponible */
+    min-width: 150px; /* Ancho mínimo antes de envolver */
+}
+.carrito-item-info h3 {
+    font-size: 1.8rem;
+    margin: 0;
+    padding: 0;
+    border: none; /* Quitar borde del h3 general de .sombra */
+}
+.carrito-item-info p {
+    margin: 0.5rem 0 0 0;
+    color: #aaa; /* Un gris más claro */
+    font-size: 1.4rem;
+}
+
+.carrito-item-controles {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.carrito-item-cantidad {
+    width: 70px;
+    padding: 0.5rem;
+    background-color: #333;
+    color: var(--blanco);
+    border: 1px solid var(--primario);
+    border-radius: 0.5rem;
+}
+
+.carrito-item-total {
+    margin-left: auto; /* Empuja esto al final */
+    font-size: 1.6rem;
+    font-weight: bold;
+    min-width: 100px; /* Asegura espacio */
+    text-align: right;
+}
+
+/* Botón para eliminar (rojo)
+*/
+.btn-eliminar {
+    background-color: #dc3545; /* Rojo de Bootstrap */
+    color: var(--blanco);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+.btn-eliminar:hover {
+    background-color: #c82333;
+}
+
+
+/* Estilos para el Resumen
+*/
+.resumen-linea {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.6rem;
+    margin-bottom: 1.5rem;
+}
+.resumen-linea.total {
+    font-size: 2rem;
+    font-weight: bold;
+    border-top: 1px solid var(--primario);
+    padding-top: 1.5rem;
+}
+.resumen-linea span:last-child {
+    font-weight: bold;
+}
+
+.resumen-botones {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+/* Reutilizando tu clase .boton pero con más especificidad */
+.btn-checkout,
+.btn-vaciar {
+    background-color: var(--secundario); /* El morado de tu .boton */
+    color: var(--blanco);
+    padding: 1.2rem;
+    font-size: 1.8rem;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: bold;
+    border-radius: .5rem;
+    width: 100%;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-checkout:hover {
+    background-color: #6a016a; /* Un morado más brillante */
+}
+
+/* Estilo secundario para "Vaciar" */
+.btn-vaciar {
+    background-color: transparent;
+    border: 2px solid #dc3545; /* Borde rojo */
+    color: #dc3545;
+}
+.btn-vaciar:hover {
+    background-color: #dc3545;
+    color: var(--blanco);
+}
+
+/* Media Query para Desktop (cuando la pantalla es más ancha)
+*/
+@media (min-width: 992px) {
+    .carrito-container {
+        flex-direction: row; /* Lado a lado */
+    }
+
+    .carrito-item {
+        flex-wrap: nowrap; /* Evita que se envuelva en desktop */
+    }
+
+    .carrito-item-controles {
+        align-items: center; /* Centra los controles */
+    }
+}
+
+.carro{
+    margin-top: 1rem;
+    margin-left: 2rem;
+    margin-right: 1rem;
+}

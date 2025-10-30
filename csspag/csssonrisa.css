@@ -1,0 +1,558 @@
+:root
+{
+    --blanco: #ffffff;
+    --oscuro: #212121;
+    --primario: #009783;
+    --secundario :#440144;
+    --gris: rgba(0, 18, 108, 0.4);
+    --grisClaro: #DFE9F3;
+}
+html{
+    font-size :62.5%;
+    box-sizing: border-box;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+*, *:before, *:after{
+    box-sizing: inherit;
+}
+
+body{
+    font-size: 16px;  
+    font-family: 'Krub',sans-serif;
+    background-image: linear-gradient(to top, var(--grisClaro) 0%, var(--blanco) 100%);
+    margin: 0;
+    background-image: url("../Imagenes/back-neon.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.text-logo{
+    margin-left: 5px;
+    font-size: 2rem;
+    text-align: center;
+    color: var(--blanco);
+    font-weight: bold;
+    cursor: pointer;
+}
+
+h1{
+    font-size: 3.8rem;
+}
+
+h2{
+    font-size: 2.8rem;
+}
+
+h3{
+    font-size: 1.8rem;
+    color:var(--blanco);
+}
+
+h1,h2,h3{
+    text-align: center;
+    color: var(--blanco);
+}
+
+.titulo span{
+    font-size: 2rem;
+    
+}
+
+.contenedor{
+    max-width: 120rem;
+    margin: 0 auto;
+}
+
+.cont-logo{
+    max-width: 120rem;
+    margin: 0 auto;
+}
+
+.fix{
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.boton{
+    background-color: var(--secundario);
+    color: var(--blanco);
+    padding: 1rem 3rem;
+    margin-top: 3rem;
+    font-size: 2rem;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: bold;
+    border-radius: .5rem;
+    width: 90%;
+    text-align: center;
+    border: none;
+}
+
+@media (min-width: 768px) {
+    .boton{
+        width: auto;
+    }
+}
+
+.boton:hover{
+    cursor: pointer;
+}
+
+.sombra{
+    -webkit-box-shadow: 0px 5px 15px 0px rgba(112,112,112,0.54);
+    -moz-box-shadow: 0px 5px 15px 0px rgba(112,112,112,0.54);
+    box-shadow: 0px 5px 15px 0px rgba(112,112,112,0.54);
+    background-color: var(--blanco);
+    padding: 2rem;
+    border-radius: 1rem;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding-top: 10rem;
+}
+
+.w-sm-100{
+    width: 100%;
+}
+
+@media (min-width: 768px){
+    .w-sm-100{
+    width: auto;
+    }
+}
+
+.flex{
+    display: flex;
+}
+
+.alinear-derecha{
+    justify-content: flex-end;
+}
+
+.navbar-brand {
+  font-size: 1.75rem; /* Ajusta este valor (ej. 2rem, 24px) como gustes */
+  font-weight: bold;  /* Opcional: para hacerlo más grueso */
+}
+
+.navbar-brand img {
+  height: 50px; /* Ajusta la altura como necesites */
+  width: auto;  /* Esto mantiene la proporción de la imagen */
+}
+
+.nav-bg {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.nav-bg .cont-logo{
+    display: flex;
+    align-items: center;
+}
+
+.navegacion_principal{   
+    display: flex;
+    flex-direction: column;       
+}
+
+.cont-logo{   
+    display: flex;
+}
+
+@media (min-width:768px){
+    .nav-bg {
+        flex-direction: row; /* <-- El logo y el menú vuelven a estar en fila */
+        justify-content: space-between; /* <-- Esto los separa a los extremos */
+        margin-bottom: 0rem;
+    }
+
+    .nav-bg .navegacion_principal,
+    .nav-bg .cont-logo{
+        flex-direction: row;
+    }
+}
+
+.navegacion_principal a{
+     display: block;
+     text-align: center;
+     color:var(--blanco);
+     text-decoration: none;
+     font-size: 2rem;
+     font-weight: bold;
+     padding: 1rem ;
+}
+
+.cont-logo{
+    display: flex;          /* Para alinear imagen y texto en una línea */
+    align-items: center;    /* Para centrarlos verticalmente */
+    gap: 1rem;            /* <-- ¡Esta es la línea clave! Añade espacio entre ellos */
+    height: 7rem;
+    
+    /* Tus otros estilos como color, text-decoration, etc. */
+    color: var(--blanco);
+    text-decoration: none;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.navegacion_principal a:hover{
+    background-color: var(--primario);
+    color: var(--oscuro);
+
+}
+
+.hero{
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 450px;
+    height: 50rem;
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.contenido-hero{
+    position: absolute;
+    background-color: rgba(0,0,0,.7);
+    background-color: rgb(0 0 0 / 70%);
+    width: 100%;
+    height: 70rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.contenido-hero h2,
+.contenido-hero p{
+    color:var(--blanco);
+}
+
+.contenido-hero .ubicacion {
+    display: flex;
+    flex-direction: column; /* Apila la imagen y el texto verticalmente */
+    align-items: center;    /* Centra ambos elementos horizontalmente */
+    text-align: center;     /* Centra el texto dentro de su propio div */
+    padding-top: 7rem;
+}
+
+.contenido-hero .ubicacion .img-neonOswi{
+    object-fit: cover;
+    
+    height: 30rem;
+}
+
+.descripciones-Header{
+    height: 30%;
+    padding: 2rem;
+}
+
+@media (min-width: 768px) {
+    .hero{
+        background-repeat: no-repeat;
+        background-size: cover;
+        height: 450px;
+        position: relative;
+        margin-bottom: 2rem;
+    }
+
+    .contenido-hero{
+        position: absolute;
+        background-color: rgba(0,0,0,.7);
+        background-color: rgb(0 0 0 / 70%);
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .contenido-hero .ubicacion {
+        flex-direction: row;      /* Pone la imagen y el texto uno al lado del otro */
+        justify-content: center;  /* Centra el grupo horizontalmente */
+        align-items: center;      /* Alinea verticalmente la imagen y el texto */
+        gap: 3rem;                /* Agrega un espacio entre la imagen y el texto */
+        width: auto;              /* Elimina el ancho fijo para un mejor centrado */
+    }
+
+    .descripciones-Header{
+        height: 100%;
+        padding: 2rem;
+    }
+}
+
+.servicios,
+.navegacion_principal,
+.formulario{
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+}
+
+@media (min-width: 768px) {
+    .servicios{
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        column-gap: 1rem;
+    }
+}
+
+.servicio{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.servicio h3{
+    color: var(--secundario);
+    font-weight: normal;
+}
+
+.servicio p{
+    line-height: 2;
+    text-align: center;
+}
+
+.servicio .iconos{
+    height: 15rem;
+    width: 15rem;
+    background-color: var(--primario);
+    border-radius: 50%;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+/**CONATACTO**/
+.formulario{
+    background-color: var(--gris);
+    width: min(60rem, 100%);
+    margin-top: 2rem;
+    padding: 2rem;
+    border-radius: 1rem;
+}
+
+.formulario fieldset{
+    border: none;
+}
+
+.formulario legend{
+    text-align: center;
+    font-size: 1.8rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    color: var(--primario);
+}
+
+@media (min-width: 768px){
+    .formulario{
+        background-color: var(--gris);
+        width: min(60rem, 100%);
+        margin: 0 auto;
+        padding: 2rem;
+        border-radius: 1rem;
+    }
+
+    .contenedor-campos{
+        display: grid;
+        grid-template-columns: 50% 50%;
+        grid-template-rows: auto auto 20rem;
+        column-gap: 1rem;
+    }
+
+    .campo:nth-child(3),
+    .campo:nth-child(4){
+        grid-column: 1 / 3;
+    }
+}
+
+.campo{
+    margin-bottom: 1rem;
+}
+
+.campo label{
+    color: var(--blanco);
+    font-weight: bold;
+    margin-bottom: .5rem;
+    display: block;
+}
+
+.campo textarea{
+    height: 20rem;
+}
+
+.input-text{
+    width: 100%;
+    border: none;
+    padding: 1.5rem;
+    border-radius: .5rem;
+}
+
+.footer{
+    text-align: center;
+}
+
+.logo {
+    height: 6rem;
+    cursor: pointer;
+    margin-right: .2rem; /* <-- Añade esta línea para empujar el texto */
+}
+
+.contenedor.sombra {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Botón genérico */
+        .bton {
+            display: inline-block;
+            padding: 12px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            transition: background-color 0.2s ease;
+            font-size: 1.5rem;
+        }
+        .bton:hover {
+            background-color: #0056b3;
+        }
+
+
+        /* --- 2. CABECERA ORIGINAL (Tu nueva sección) --- */
+        .original {
+            margin-bottom: 40px; /* Espacio antes de la cuadrícula */
+        }
+
+        .amigo-original {
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            padding: 24px;
+            
+            /* Esta es la magia de Flexbox */
+            display: flex;
+            align-items: center; /* Centra verticalmente la img y el texto */
+            gap: 24px; /* Espacio entre la imagen y el texto */
+
+            /* El borde rojo que pediste */
+        }
+
+        .amigo-img-original {
+            /* La imagen ocupará 1 parte del espacio */
+            flex: 1; 
+            max-width: 300px; /* Un límite para que no crezca demasiado */
+            height: 400px;
+            border-radius: 8px;
+        }
+
+        .amigo-original-contenido {
+            /* El contenido ocupará 2 partes (el doble que la imagen) */
+            flex: 2; 
+            display: flex;
+            flex-direction: column; /* Pone el texto y el botón en columna */
+            gap: 16px;
+            align-items: center;
+        }
+
+        .nft-info-original h2 {
+            margin-top: 0;
+            font-size: 2rem;
+        }
+        .nft-info-original p {
+            line-height: 1.6;
+            font-size: 2rem;
+            color: #ccc;
+        }
+
+        /* --- 3. RESPONSIVE (Móvil) --- */
+        @media (max-width: 768px) {
+            .amigo-original {
+                flex-direction: column; /* Apila la imagen y el texto */
+                align-items: stretch;
+            }
+
+            .amigo-img-original {
+                max-width: 100%; /* La imagen ocupa todo el ancho */
+            }
+        }
+
+
+        /* --- 4. CUADRÍCULA DE VARIANTES (del ejercicio anterior) --- */
+        .variantes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .amigos {
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            width: 300px;
+        }
+
+        .amigos:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+        }
+
+        .amigo-img {
+            width: 100%;
+            height: 400PX;
+            display: block;
+        }
+
+        .nft-info {
+            padding: 16px;
+        }
+        .nft-info h3 {
+            margin: 0;
+            color: white;
+        }
+
+        .button-info-nfts-container {
+            /* Oculto por defecto */
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out, opacity 0.4s ease-out;
+            
+            padding: 0 16px; /* Padding para cuando aparezca */
+            
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        /* Ajuste para el botón de la cabecera */
+        .amigo-original-contenido .button-info-nfts-container {
+            max-height: none; /* Siempre visible en la cabecera */
+            opacity: 1;
+            padding: 0;
+        }
+
+        .amigos:hover .button-info-nfts-container {
+            /* Se muestra en hover */
+            max-height: 200px;
+            opacity: 1;
+            padding-bottom: 16px; /* Añade padding al mostrarse */
+        }
+
+        .elemts{
+            align-items: center;
+        }
+
+        .carro{
+    margin-top: 1rem;
+    margin-left: 2rem;
+    margin-right: 1rem;
+}
