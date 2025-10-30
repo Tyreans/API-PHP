@@ -1,9 +1,7 @@
 <?php
 // Configuración de la base de datos
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'oswifts');
-define('DB_USER', 'app_publico');
-define('DB_PASS', 'PubPwdSegura123!');
+session_start();
+require_once('conexion.php');
 
 // Inicializar variables
 $mensaje = '';
@@ -32,13 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         try {
             // Conectar a la base de datos
-            $conn = new PDO(
-                "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
-                DB_USER,
-                DB_PASS,
-                [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-            );
-            
+            $rol_actual = $_SESSION['rol'];
+            $conn = conectarDB($rol_actual);
             // Hash de la contraseña
             $password_hash = password_hash($password, PASSWORD_DEFAULT);
             

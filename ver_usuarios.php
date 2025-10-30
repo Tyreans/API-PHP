@@ -287,7 +287,7 @@ $conn = null;
                         </div>
                         
                         <div class="user-actions">
-                            <a href="actualizar_imagen.php?id=<?php echo $usuario['id_user']; ?>" class="btn">
+                            <a href="update_pfp.php?id=<?php echo $usuario['id_user']; ?>" class="btn">
                                 Actualizar Imagen
                             </a>
                         </div>
