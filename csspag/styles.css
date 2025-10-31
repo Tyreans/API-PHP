@@ -591,3 +591,112 @@ h1,h2,h3{
     margin-left: 2rem;
     margin-right: 1rem;
 }
+
+/*
+========================================
+  ESTILOS PÁGINA DE PRODUCTO
+========================================
+*/
+.product-page {
+  /* Espacio para la navbar fija */
+  margin-top: 10rem; 
+  margin-bottom: 2rem;
+
+  /* Hacemos el texto blanco por defecto dentro del contenedor */
+  color: var(--blanco);
+}
+
+/* Ajuste de margen para pantallas pequeñas */
+@media (max-width: 992px) {
+   .product-page {
+      margin-top: 8rem; 
+   }
+}
+
+/* Sobrescribimos los estilos de 'h2' y 'h3' solo en esta página */
+.product-page h2 {
+  color: var(--blanco);
+  text-align: left; /* Quitamos el centrado de tu CSS original */
+  font-size: 2.6rem;
+  font-weight: bold;
+}
+
+.product-page h3 {
+   text-align: left; /* Quitamos el centrado */
+}
+
+/* Estilo para el precio, usando tu color primario */
+.product-page .precio-producto {
+  color: var(--primario);
+}
+
+/* Hacemos que el texto "muted" sea más claro en el fondo oscuro */
+.product-page .text-muted {
+  color: var(--grisClaro) !important;
+}
+
+/* Estilo para el input de cantidad */
+.product-page .input-cantidad {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--blanco);
+  border: 1px solid var(--primario);
+  width: 80px; /* Ancho fijo para el input */
+}
+
+/* Quitar flechas en Chrome, Safari, Edge, Opera */
+.input-cantidad::-webkit-outer-spin-button,
+.input-cantidad::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Quitar flechas en Firefox */
+.input-cantidad[type=number] {
+  -moz-appearance: textfield;
+}
+
+.product-page .input-cantidad:focus {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: var(--blanco);
+  border-color: var(--blanco);
+  /* Sombra de focus con tu color primario */
+  box-shadow: 0 0 0 0.25rem rgba(0, 151, 131, 0.5); 
+}
+
+/*
+  Botones de Acción
+*/
+
+/* Botón principal: Comprar ahora (usa tu color secundario) */
+.btn-comprar {
+  background-color: var(--secundario);
+  border-color: var(--secundario);
+  color: var(--blanco);
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 1rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-comprar:hover {
+  background-color: #6a016a; /* Un morado un poco más claro */
+  border-color: #6a016a;
+  color: var(--blanco);
+}
+
+/* Botón secundario: Agregar al carrito (usa tu color primario) */
+.btn-carrito {
+  background-color: transparent;
+  border: 2px solid var(--primario);
+  color: var(--primario);
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 1rem;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.btn-carrito:hover {
+  background-color: var(--primario);
+  border-color: var(--primario);
+  color: var(--oscuro); /* Texto oscuro al hacer hover */
+}

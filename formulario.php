@@ -1,5 +1,5 @@
 <?php
-$baseUrl = 'http://localhost/API&PHP';
+$baseUrl = 'http://localhost/API-PHP';
 ?>
 
 <h1>Ejemplo <small>Formulario de pago</small></h1>

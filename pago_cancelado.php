@@ -1,5 +1,5 @@
 <?php
-$baseUrl = 'http://localhost/API&PHP';
+$baseUrl = 'http://localhost/API-PHP';
 ?>
 
 <h2>Pedido cancelado</h2>
