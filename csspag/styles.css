@@ -700,3 +700,12 @@ h1,h2,h3{
   border-color: var(--primario);
   color: var(--oscuro); /* Texto oscuro al hacer hover */
 }
+
+
+
+@media (min-width: 768px) {
+    .img-prod{
+    height: 50rem;
+    margin-left: 8rem;
+}
+}

@@ -1,30 +1,42 @@
 <?php
-    session_start();
-    require_once('conexion.php');
+session_start();
+require_once('conexion.php');
 
-    $rol_actual = $_SESSION['rol'] ?? 'invitado';
-    $conn = conectarDB($rol_actual);
+// 1. OBTENER DATOS DEL NFT
+// ======================================
 
-    $proID = filter_input(INPUT_GET,'id', FILTER_SANITIZE_NUMBER_INT);
+$rol_actual = $_SESSION['rol'] ?? 'invitado';
+$conn = conectarDB($rol_actual);
 
-    $consultaSQL = "Select * FROM nft WHERE ID_NFT = ?";
+$proID = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
+$producto_encontrado = false;
+$fila = null; // Aquí guardaremos los datos del producto
 
-    if($stmt = $conn->prepare($consultaSQL)) {
+if (empty($proID)) {
+    // Si no hay ID, $producto_encontrado se queda en false
+} else {
+    // Si hay ID, buscamos el producto
+    $consultaSQL = "SELECT * FROM nft WHERE ID_NFT = ?";
+    
+    if ($stmt = $conn->prepare($consultaSQL)) {
         $stmt->execute([$proID]);
-
         $fila = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if($fila){
-            echo "ID: ".$fila['ID_NFT'].", Nombre: ".$fila['TITLE'].", Descripcion: ".$fila['ABSTRACT'];
-            echo '<img src="nft/'. $fila['url_imagen'].'"/>';
+        if ($fila) {
+            $producto_encontrado = true;
         }
-    }else{
-        die("Error al preparar la consulta: ". $conn->error);
+    } else {
+        // Error al preparar la consulta (puedes loguearlo)
+        die("Error al preparar la consulta: ". $conn->error); // Quita el comentario para depurar
     }
+}
 
-    $titulo_pagina = "Producto no encontrado";
+// 2. PREPARAR DATOS PARA MOSTRAR
+// ======================================
+
+$titulo_pagina = "Producto no encontrado";
 $nombre_producto = "N/A";
-$descripcion_producto = "El NFT que buscas no existe o el ID es incorrecto.";
+$descripcion_producto = "El NFT que buscas ha sido comprado.";
 $imagen_producto = "Imagenes/nfts/oswi_port.png"; // Imagen por defecto
 $alt_imagen = "Producto no encontrado";
 $precio_entero = "0";
@@ -44,14 +56,14 @@ if ($producto_encontrado) {
     $alt_imagen = htmlspecialchars($fila['TITLE']);
 
     // Formatear el precio
-    $precio = $fila['price'] ?? 0;
+    $precio = $fila['PRICE'] ?? 0;
     $precio_entero = floor($precio);
     $precio_centavos = sprintf('%02d', ($precio - $precio_entero) * 100);
 
     // Formatear la fecha
-    if (!empty($fila['release_date'])) {
+    if (!empty($fila['RELEASE_DATE'])) {
         try {
-            $date = new DateTime($fila['release_date']);
+            $date = new DateTime($fila['RELEASE_DATE']);
             $fecha_lanzamiento = $date->format('d/m/Y'); // Formato Día/Mes/Año
         } catch (Exception $e) {
             $fecha_lanzamiento = "Fecha inválida";
@@ -59,7 +71,6 @@ if ($producto_encontrado) {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -130,72 +141,55 @@ if ($producto_encontrado) {
     </header>
 
     <main class="contenedor sombra product-page">
-        
-        <?php if ($producto_encontrado): ?>
-            <div class="row gy-4">
-                
-                <div class="col-lg-7">
-                    <img src="<?php echo $imagen_producto; ?>" 
-                         class="img-fluid rounded" 
-                         alt="<?php echo $alt_imagen; ?>">
-                </div>
-
-                <div class="col-lg-5 d-flex flex-column">
-                    
-                    <div>
-                        <p class="text-muted small">Lanzamiento: <?php echo $fecha_lanzamiento; ?></p>
-                        
-                        <h2><?php echo $nombre_producto; ?></h2>
-                        
-                        <h3 class="display-4 fw-bold my-3 precio-producto">
-                            $ <?php echo number_format($precio_entero); ?>.<sup><?php echo $precio_centavos; ?></sup>
-                        </h3>
-                        
-                        <p class="lead">
-                            <?php echo $descripcion_producto; ?>
-                        </p>
-                    </div>
-
-                    <hr class="my-4">
-
-                    <div class="mt-auto">
-                        <form action="carrito_agregar.php" method="POST">
-                            
-                            <input type="hidden" name="id_producto" value="<?php echo $fila['ID_NFT']; ?>">
-
-                            <h5 class="fw-bold">Stock disponible</h5>
-                            
-                            <div class="d-flex align-items-center mb-3">
-                                <label for="cantidad" class="form-label me-3 mb-0">Cantidad:</label>
-                                <input type="number" class="form-control input-cantidad" 
-                                       id="cantidad" name="cantidad" value="1" min="1" max="10"> <span class="text-muted ms-3">(Disponibles)</span>
-                            </div>
-
-                            <div class="d-grid gap-2">
-                                <button type="submit" name="accion" value="comprar" class="btn btn-lg btn-comprar">Comprar ahora</button>
-                                <button type="submit" name="accion" value="agregar" class="btn btn-lg btn-carrito">Agregar al carrito</button>
-                            </div>
-                        </form>
-                    </div>
-
-                </div>
+    <?php if ($producto_encontrado): ?>
+        <div class="row gy-4">
+            <div class="col-lg-7">
+                <img src="<?php echo $imagen_producto; ?>" 
+                     class="img-fluid rounded img-prod" 
+                     alt="<?php echo $alt_imagen; ?>">
             </div>
-        
-        <?php else: ?>
-            <div class="row text-center justify-content-center">
-                <div class="col-md-8">
-                    <h2 class="text-danger" style="font-size: 3rem;">⛔ Producto no encontrado</h2>
-                    <p class="lead" style="font-size: 1.5rem;">
+
+            <div class="col-lg-5 d-flex flex-column">
+                <div>
+                    <p class="text-muted small">Lanzamiento: <?php echo $fecha_lanzamiento; ?></p>
+                    <h2><?php echo $nombre_producto; ?></h2>
+                    <h3 class="display-4 fw-bold my-3 precio-producto">
+                        $ <?php echo number_format($precio_entero); ?>.<sup><?php echo $precio_centavos; ?></sup>
+                    </h3>
+                    <p class="lead">
                         <?php echo $descripcion_producto; ?>
                     </p>
-                    <a href="index.html" class="btn btn-lg btn-comprar" style="width: auto; text-decoration: none; font-size: 1.2rem; padding: 1rem 2rem;">
-                        Volver al Inicio
-                    </a>
                 </div>
+
+                <hr class="my-4">
+
+                <div class="mt-auto">
+                    <form action="carrito_agregar.php" method="POST">
+                        <input type="hidden" name="id_producto" value="<?php echo $fila['ID_NFT']; ?>">
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" name="accion" value="comprar" class="btn btn-lg btn-comprar">Comprar ahora</button>
+                            <button type="submit" name="accion" value="agregar" class="btn btn-lg btn-carrito">Agregar al carrito</button>
+                        </div>
+                    </form>
+                </div>
+
             </div>
-        <?php endif; ?>
-        
-    </main>
+        </div>
+    <?php else: ?>
+        <div class="row text-center justify-content-center">
+            <div class="col-md-8">
+                <h2 class="text-danger" style="font-size: 3rem;">⛔ Producto no encontrado</h2>
+                <p class="lead" style="font-size: 1.5rem;">
+                    <?php echo $descripcion_producto; ?>
+                </p>
+                <a href="index.html" class="btn btn-lg btn-comprar" style="width: auto; text-decoration: none; font-size: 1.2rem; padding: 1rem 2rem;">
+                    Volver al Inicio
+                </a>
+            </div>
+        </div>
+    <?php endif; ?>
+</main>
 
 
     <footer class="footer">

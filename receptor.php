@@ -1,5 +1,5 @@
 <?php
-$baseUrl = 'http://localhost/API&PHP';
+$baseUrl = 'http://localhost/API-PHP';
 
 // Para cambiar al entorno de producción usar: www.paypal.com
 $paypal_hostname = 'www.sandbox.paypal.com';

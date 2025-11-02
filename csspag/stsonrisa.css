@@ -524,13 +524,13 @@ h1,h2,h3{
             opacity: 0;
             overflow: hidden;
             transition: max-height 0.4s ease-out, opacity 0.4s ease-out;
-            
             padding: 0 16px; /* Padding para cuando aparezca */
-            
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
+
+
         /* Ajuste para el botón de la cabecera */
         .sonrisa-original-contenido .button-info-nfts-container {
             max-height: none; /* Siempre visible en la cabecera */
@@ -554,3 +554,4 @@ h1,h2,h3{
     margin-left: 2rem;
     margin-right: 1rem;
 }
+

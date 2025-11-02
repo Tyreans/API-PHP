@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         try {
             // Conectar a la base de datos
-            $rol_actual = $_SESSION['rol'];
+            $rol_actual = 'invitado';
             $conn = conectarDB($rol_actual);
             // Hash de la contraseña
             $password_hash = password_hash($password, PASSWORD_DEFAULT);
