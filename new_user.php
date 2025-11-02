@@ -42,9 +42,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mensaje = '¡Registro exitoso! Tu cuenta ha sido creada.';
             $tipo_mensaje = 'exito';
             
-            // Limpiar el formulario
-            $username = '';
-            $email = '';
+            // ✅ Iniciar sesión automáticamente
+            $_SESSION['usuario'] = [
+                'username' => $username,
+                'email' => $email
+            ];
+            $_SESSION['autenticado'] = true; // <-- añade esta línea
+
+            // ✅ Redirigir al index.php
+            header("Location: index.php");
+            exit();
             
         } catch (PDOException $e) {
             if ($e->getCode() == 23000) {
