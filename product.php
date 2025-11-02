@@ -164,8 +164,8 @@ if ($producto_encontrado) {
                 <hr class="my-4">
 
                 <div class="mt-auto">
-                    <form action="carrito_agregar.php" method="POST">
-                        <input type="hidden" name="id_producto" value="<?php echo $fila['ID_NFT']; ?>">
+                    <form action="pay.php" method="POST">
+                        <input type="hidden" name="ID_NFT" value="<?php echo $fila['ID_NFT']; ?>">
                         
                         <div class="d-grid gap-2">
                             <button type="submit" name="accion" value="comprar" class="btn btn-lg btn-comprar">Comprar ahora</button>
