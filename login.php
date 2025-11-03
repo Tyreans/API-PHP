@@ -1,5 +1,37 @@
 <?php
 session_start();
+
+// Si ya hay una sesión activa, mostrar opciones
+if (isset($_SESSION['user_id']) && isset($_SESSION['rol'])) {
+    ?>
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Sesión Activa - OSWifts</title>
+        <link rel="stylesheet" href="login.css">
+    </head>
+    <body>
+        <div class="container">
+            <div class="session-active">
+                <h1>✅ Sesión Activa</h1>
+                <p class="subtitle">Ya tienes una sesión iniciada</p>
+                <div class="user-info">
+                    <p><strong>Rol:</strong> <?php echo ucfirst(htmlspecialchars($_SESSION['rol'])); ?></p>
+                </div>
+                <div class="button-group">
+                    <a href="index.php" class="btn btn-primary">Ir al inicio</a>
+                    <a href="logout.php" class="btn btn-secondary">Cerrar sesión</a>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    <?php
+    exit;
+}
+
 require_once('conexion.php');
 
 $mensaje = '';
@@ -17,29 +49,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tipo_mensaje = 'error';
     } else {
         try {
-            // Conectar con el rol correspondiente
-            $rol_actual = 'invitado';
-            $conn = conectarDB($rol_actual);
+            // Conectar con rol invitado
+            $conn = conectarDB('invitado');
 
-            // Llamar a la función SQL que devuelve el hash
-            $stmt = $conn->prepare("SELECT fn_get_user_hash(?) AS user_hash");
+            // Llamar al procedure que obtiene info del usuario
+            $stmt = $conn->prepare("CALL sp_get_user_login_info(?)");
             $stmt->execute([$email]);
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if ($result && !empty($result['user_hash'])) {
-                $hash = $result['user_hash'];
-
-                if (password_verify($password, $hash)) {
-                    // Contraseña correcta -> obtener datos del usuario
-                    $stmt = $conn->prepare("SELECT id_user, username, email FROM users WHERE email = ?");
-                    $stmt->execute([$email]);
-                    $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                    $_SESSION['usuario'] = $usuario;
-                    $_SESSION['autenticado'] = true;
-
-                    // Redirigir al dashboard o página principal
-                    header('Location: index.php');
+            if ($user && $user['ID_USER'] !== null) {
+                // Verificar la contraseña
+                if (password_verify($password, $user['PASSWORD_HASH'])) {
+                    // Cerrar el statement anterior
+                    $stmt->closeCursor();
+                    
+                    // Generar token único para la sesión
+                    $session_token = bin2hex(random_bytes(32));
+                    $user_ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+                    
+                    // Registrar la sesión en la base de datos
+                    $stmt_session = $conn->prepare("
+                        INSERT INTO SESSIONS (SES_TOKEN, SES_LAST_ACTIVITY, SES_IP, ID_USER)
+                        VALUES (?, NOW(), ?, ?)
+                    ");
+                    $stmt_session->execute([$session_token, $user_ip, $user['ID_USER']]);
+                    
+                    // Guardar datos en la sesión de PHP
+                    $_SESSION['user_id'] = $user['ID_USER'];
+                    $_SESSION['rol'] = $user['ROL'];
+                    $_SESSION['session_token'] = $session_token;
+                    
+                    // Redirigir según el rol
+                    if ($user['ROL'] === 'admin') {
+                        header('Location: admin_panel.php');
+                    } else {
+                        header('Location: index.php');
+                    }
                     exit;
                 } else {
                     $mensaje = 'Contraseña incorrecta.';
@@ -52,8 +97,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } catch (PDOException $e) {
             $mensaje = 'Error al iniciar sesión: ' . $e->getMessage();
             $tipo_mensaje = 'error';
-        } finally {
-            $conn = null;
         }
     }
 }
@@ -65,85 +108,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión - OSWifts</title>
-    <style>
-        /* Mismo estilo que register */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .container {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            padding: 40px;
-            width: 100%;
-            max-width: 400px;
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .subtitle {
-            color: #666;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
-        input[type="email"], input[type="password"] {
-            width: 100%; padding: 12px; border: 2px solid #e1e1e1;
-            border-radius: 5px; font-size: 14px; transition: border-color 0.3s;
-        }
-        input:focus { outline: none; border-color: #667eea; }
-        button {
-            width: 100%; padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white; border: none; border-radius: 5px;
-            font-size: 16px; font-weight: 600;
-            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
-        }
-        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102,126,234,0.4); }
-        .mensaje { padding: 12px; border-radius: 5px; margin-bottom: 20px; text-align: center; }
-        .mensaje.exito { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .mensaje.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-    </style>
+    <link rel="stylesheet" href="login.css">
 </head>
 <body>
     <div class="container">
-        <h1>Iniciar Sesión</h1>
-        <p class="subtitle">Bienvenido de nuevo a OSWifts</p>
+        <div class="login-box">
+            <h1>Iniciar Sesión</h1>
+            <p class="subtitle">Bienvenido de nuevo a OSWifts</p>
 
-        <?php if ($mensaje): ?>
-            <div class="mensaje <?php echo $tipo_mensaje; ?>">
-                <?php echo htmlspecialchars($mensaje); ?>
-            </div>
-        <?php endif; ?>
+            <?php if ($mensaje): ?>
+                <div class="mensaje <?php echo $tipo_mensaje; ?>">
+                    <?php echo htmlspecialchars($mensaje); ?>
+                </div>
+            <?php endif; ?>
 
-        <form method="POST" action="">
-            <div class="form-group">
-                <label for="email">Correo electrónico</label>
-                <input type="email" id="email" name="email" required maxlength="100">
-            </div>
+            <form method="POST" action="">
+                <div class="form-group">
+                    <label for="email">Correo electrónico</label>
+                    <input type="email" id="email" name="email" required maxlength="100"
+                           value="<?php echo htmlspecialchars($email ?? ''); ?>">
+                </div>
 
-            <div class="form-group">
-                <label for="password">Contraseña</label>
-                <input type="password" id="password" name="password" required minlength="8">
-            </div>
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password" required minlength="8">
+                </div>
 
-            <button type="submit">Entrar</button>
-        </form>
+                <button type="submit" class="btn btn-primary">Entrar</button>
+            </form>
 
-        <p class="subtitle" style="margin-top:20px;">
-            ¿No tienes cuenta? <a href="new_user.php" style="color:#667eea; text-decoration:none;">Regístrate aquí</a>
-        </p>
+            <p class="subtitle" style="margin-top:20px;">
+                ¿No tienes cuenta? <a href="new_user.php">Regístrate aquí</a>
+            </p>
+        </div>
     </div>
 </body>
 </html>

@@ -1,6 +1,20 @@
 <?php
 session_start();
-$usuario = $_SESSION['usuario'] ?? null;
+require_once("conexion.php");
+$id_user = $_SESSION['user_id'] ?? null;
+$rol = $_SESSION['rol'] ?? null;
+$conn = conectarDB($rol);
+
+$consultaSQL = "SELECT username FROM users WHERE ID_USER = ?";
+
+if ($stmt = $conn->prepare($consultaSQL)) {
+        $stmt->execute([$id_user]);
+        $fila = $stmt->fetch(PDO::FETCH_ASSOC);
+} else {
+    // Error al preparar la consulta (puedes loguearlo)
+    die("Error al preparar la consulta: ". $conn->error); // Quita el comentario para depurar
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -53,8 +67,8 @@ $usuario = $_SESSION['usuario'] ?? null;
                                 <li><hr class="dropdown-divider"></li>
 
                                 <!-- Aquí viene la parte dinámica -->
-                                <?php if (isset($_SESSION['autenticado']) && $_SESSION['autenticado'] === true): ?>
-                                    <li><a class="dropdown-item disabled" href="#">👋 Hola, <?php echo htmlspecialchars($_SESSION['usuario']['username']); ?></a></li>
+                                <?php if (isset($_SESSION['user_id'])): ?>
+                                    <li><a class="dropdown-item disabled" href="#">👋 Hola, <?php echo htmlspecialchars($fila['username']); ?></a></li>
                                     <li><a class="dropdown-item" href="logout.php">Cerrar sesión</a></li>
                                 <?php else: ?>
                                     <li><a class="dropdown-item" href="login.php">Iniciar sesión</a></li>
