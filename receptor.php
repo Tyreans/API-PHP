@@ -299,6 +299,24 @@ if (strcmp($lines[0], "SUCCESS") == 0) {
         $output = $dompdf->output();
         file_put_contents($ruta_guardado, $output);
          // 4️⃣ MOSTRAR CONFIRMACIÓN
+
+         if (isset($purchase_info["PURCHASE_ID"]) && !empty($ruta_guardado)) {
+            try {
+                $stmt_update_receipt = $conn->prepare("
+                    UPDATE PURCHASE 
+                    SET receipt_url = ? 
+                    WHERE PURCHASE_ID = ? AND ID_USER = ?
+                ");
+                $stmt_update_receipt->execute([
+                    $ruta_guardado, 
+                    $purchase_info["PURCHASE_ID"],
+                    $id_user
+                ]);
+            } catch (PDOException $e) {
+                // Opcional: Registrar este error, aunque no debería detener la compra.
+                // error_log("No se pudo guardar la ruta del recibo: " . $e->getMessage());
+            }
+        }
         ?>
         <!DOCTYPE html>
         <html lang="es">
@@ -331,8 +349,8 @@ if (strcmp($lines[0], "SUCCESS") == 0) {
                 >
                     Ver y Descargar Factura PDF
                 </a>
-                <p><a href="mi_biblioteca.php">📚 Ver mi Biblioteca</a></p>
-                <p><a href="marketplace.php">🛒 Volver al Marketplace</a></p>
+                <p><a href="library.php">📚 Ver mi Biblioteca</a></p>
+                <p><a href="index.php">🛒 Volver al Marketplace</a></p>
             </div>
         </body>
         </html>

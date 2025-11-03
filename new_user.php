@@ -6,6 +6,8 @@ require_once('conexion.php');
 // Inicializar variables
 $mensaje = '';
 $tipo_mensaje = '';
+$username = ''; // Definir para mantener el valor en el formulario
+$email = '';    // Definir para mantener el valor en el formulario
 
 // Procesar el formulario cuando se envía
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -28,30 +30,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mensaje = 'El email no es válido';
         $tipo_mensaje = 'error';
     } else {
+        $conn = null; // Asegurarse de que $conn esté inicializada
         try {
             // Conectar a la base de datos
             $rol_actual = 'invitado';
             $conn = conectarDB($rol_actual);
+            
             // Hash de la contraseña
             $password_hash = password_hash($password, PASSWORD_DEFAULT);
             
-            // Llamar al procedimiento almacenado
+            // Llamar al procedimiento almacenado para registrar
             $stmt = $conn->prepare("CALL sp_register_user(?, ?, ?)");
             $stmt->execute([$username, $email, $password_hash]);
+            $stmt->closeCursor(); // Cerrar el cursor después de registrar
             
-            $mensaje = '¡Registro exitoso! Tu cuenta ha sido creada.';
-            $tipo_mensaje = 'exito';
-            
-            // ✅ Iniciar sesión automáticamente
-            $_SESSION['usuario'] = [
-                'username' => $username,
-                'email' => $email
-            ];
-            $_SESSION['autenticado'] = true; // <-- añade esta línea
+            // --- INICIO DE LA LÓGICA CORREGIDA ---
+            // Ahora que el usuario está creado, iniciamos sesión como en login.php
 
-            // ✅ Redirigir al index.php
-            header("Location: index.php");
-            exit();
+            // 1. Obtener la información del usuario recién creado
+            $stmt_user = $conn->prepare("CALL sp_get_user_login_info(?)");
+            $stmt_user->execute([$email]);
+            $user = $stmt_user->fetch(PDO::FETCH_ASSOC);
+
+            if ($user && $user['ID_USER'] !== null) {
+                $stmt_user->closeCursor();
+                
+                // 2. Generar token único para la sesión
+                $session_token = bin2hex(random_bytes(32));
+                $user_ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+                
+                // 3. Registrar la sesión en la base de datos (como en login.php)
+                $stmt_session = $conn->prepare("
+                    INSERT INTO SESSIONS (SES_TOKEN, SES_LAST_ACTIVITY, SES_IP, ID_USER)
+                    VALUES (?, NOW(), ?, ?)
+                ");
+                $stmt_session->execute([$session_token, $user_ip, $user['ID_USER']]);
+                
+                // 4. Guardar datos CORRECTOS en la sesión de PHP
+                $_SESSION['user_id'] = $user['ID_USER'];
+                $_SESSION['rol'] = $user['ROL'];
+                $_SESSION['session_token'] = $session_token;
+                
+                // 5. Redirigir al index
+                header("Location: index.php");
+                exit();
+
+            } else {
+                // Esto no debería pasar si el registro fue exitoso
+                $mensaje = 'Error al iniciar sesión después del registro. Intenta iniciar sesión manualmente.';
+                $tipo_mensaje = 'error';
+            }
+            // --- FIN DE LA LÓGICA CORREGIDA ---
             
         } catch (PDOException $e) {
             if ($e->getCode() == 23000) {
@@ -61,7 +90,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $tipo_mensaje = 'error';
         } finally {
-            $conn = null;
+            if ($conn) {
+                $conn = null;
+            }
         }
     }
 }
@@ -207,7 +238,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     type="text" 
                     id="username" 
                     name="username" 
-                    value="<?php echo htmlspecialchars($username ?? ''); ?>"
+                    value="<?php echo htmlspecialchars($username); ?>"
                     required
                     maxlength="50"
                 >
@@ -219,7 +250,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     type="email" 
                     id="email" 
                     name="email" 
-                    value="<?php echo htmlspecialchars($email ?? ''); ?>"
+                    value="<?php echo htmlspecialchars($email); ?>"
                     required
                     maxlength="100"
                 >
@@ -250,6 +281,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             <button type="submit">Registrarse</button>
         </form>
+         <p class="subtitle" style="margin-top:20px;">
+            ¿Ya tienes cuenta? <a href="login.php">Inicia sesión aquí</a>
+         </p>
     </div>
 </body>
 </html>

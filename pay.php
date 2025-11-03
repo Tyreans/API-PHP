@@ -20,7 +20,7 @@
     // ======================================
     $rol_actual = $_SESSION['rol'] ?? 'invitado';
     $conn = conectarDB($rol_actual);
-    $baseUrl = 'http://localhost/API&PHP';
+    $baseUrl = 'http://localhost/API-PHP';
 
     // Consultar información del NFT
     $stmt = $conn->prepare("

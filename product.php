@@ -1,7 +1,32 @@
 <?php
 session_start();
-require_once('conexion.php');
+require_once('conexion.php'); // <-- 1. LA SOLUCIÓN PRINCIPAL
 
+$id_user = $_SESSION['user_id'] ?? null;
+$rol = $_SESSION['rol'] ?? null;
+
+// 2. DEFINE UNA IMAGEN POR DEFECTO
+$profile_pic = 'pfp/default_user.png'; // (o la ruta de tu imagen por defecto)
+$fila1 = null; 
+
+if ($id_user) {
+    $conn = conectarDB($rol); // Ahora $conn solo se crea si el user existe
+    $consultaSQL = "SELECT u.username, c.PROFILE_PIC_URL 
+                    FROM users u 
+                    LEFT JOIN CLIENTE c ON u.ID_USER = c.ID_USER 
+                    WHERE u.ID_USER = ?";
+    
+    if ($stmt = $conn->prepare($consultaSQL)) {
+        $stmt->execute([$id_user]);
+        $fila1 = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Si hay datos Y la foto no está vacía, actualiza la variable
+        if ($fila1 && !empty($fila1['PROFILE_PIC_URL'])) {
+            $profile_pic = 'pfp/'.$fila1['PROFILE_PIC_URL'];
+            // echo $profile_pic; // <-- 3. QUITA ESTE ECHO, no es necesario aquí
+        }
+    }
+}
 // 1. OBTENER DATOS DEL NFT
 // ======================================
 
@@ -89,51 +114,86 @@ if ($producto_encontrado) {
     
     <link rel="preload" href="csspag/styles.css" as ="style">
     <link href="csspag/styles.css" rel="stylesheet"> 
+    <style>
+        /* Estilos para la foto de perfil en el menú */
+        .profile-dropdown-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .profile-pic-small {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #fff;
+        }
+        
+        .profile-username {
+            font-weight: 600;
+        }
+    </style>
 </head>
 <body>
       
     <header> 
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container-fluid">
-            <a class="navbar-brand" href="index.html"> <img src="Imagenes/to_main.png" alt="Logo" width="30" height="24" class="d-inline-block align-middle">
-            OSWI-FTS
+            <a class="navbar-brand" href="index.php">
+                <img src="Imagenes/to_main.png" alt="Logo" width="30" height="24" class="d-inline-block align-middle">
+                OSWI-FTS
             </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDarkNavbar" aria-controls="offcanvasDarkNavbar" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDarkNavbar" aria-controls="offcanvasDarkNavbar" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasDarkNavbar" aria-labelledby="offcanvasDarkNavbarLabel">
+            </button>
+            <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasDarkNavbar" aria-labelledby="offcanvasDarkNavbarLabel">
                 <div class="offcanvas-header">
-                    <h5 class="offcanvas-title" id="offcanvasDarkNavbarLabel">Menu</h5>
+                    <h5 class="offcanvas-title" id="offcanvasDarkNavbarLabel">Menú</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
                 <div class="offcanvas-body">
                     <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.html">Inicio</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Link</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Dropdown
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-dark">
-                        <li><a class="dropdown-item" href="#">Action</a></li>
-                        <li><a class="dropdown-item" href="#">Another action</a></li>
-                        <li>
-                            <hr class="dropdown-divider">
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="index.php">Inicio</a>
                         </li>
-                        <li><a class="dropdown-item" href="#">Iniciar Sesion</a></li>
-                        </ul>
-                    </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Link</a>
+                        </li>
+                        
+                        <!-- MENÚ DESPLEGABLE CON FOTO DE PERFIL -->
+                        <li class="nav-item dropdown">
+                            <?php if (isset($_SESSION['user_id'])): ?>
+                                <!-- Usuario logueado: mostrar foto y nombre -->
+                                <a class="nav-link dropdown-toggle profile-dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <img src="<?php echo htmlspecialchars($profile_pic); ?>" 
+                                         alt="Perfil" 
+                                         class="profile-pic-small">
+                                    <span class="profile-username"><?php echo htmlspecialchars($fila1['username']); ?></span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-dark">
+                                    <li><a class="dropdown-item disabled" href="#">👋 Hola, <?php echo htmlspecialchars($fila['username']); ?></a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="library.php">📚 Mi Biblioteca</a></li>
+                                    <li><a class="dropdown-item" href="recibos.php">🧾 Mis Recibos</a></li>
+                                    <li><a class="dropdown-item" href="update_pfp.php">🖼️ Cambiar Foto</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="logout.php">🚪 Cerrar sesión</a></li>
+                                </ul>
+                            <?php else: ?>
+                                <!-- Usuario no logueado: mostrar "Más" -->
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Más
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-dark">
+                                    <li><a class="dropdown-item" href="login.php">Iniciar sesión</a></li>
+                                    <li><a class="dropdown-item" href="new_user.php">Registrarse</a></li>
+                                </ul>
+                            <?php endif; ?>
+                        </li>
                     </ul>
-                    <form class="d-flex mt-3" role="search">
-                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
-                    <button class="btn btn-success" type="submit">Search</button>
-                    </form>
-                    <a href="carrito.html" class="carrito"> <img src="Imagenes/carro2.png" width="30" height="24" class="d-inline-block align-middle carro">
-                    </a>
+                    
+                    <!-- BARRA DE BÚSQUEDA ELIMINADA -->
                 </div>
             </div>
         </div>
