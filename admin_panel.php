@@ -32,16 +32,35 @@ $offset = ($pagina_actual - 1) * $nfts_por_pagina;
 // ============================================
 $nfts = [];
 $total_nfts = 0;
-$nfts_vendidos = 0;
-$nfts_disponibles = 0;
 
 try {
-    // Contar total de NFTs del vendedor
+    // Contar total de NFTs del vendedor (ESTO YA FUNCIONA)
     $stmt_count = $conn->prepare("SELECT COUNT(*) as total FROM NFT WHERE SALESMAN_ID = ?");
     $stmt_count->execute([$id_user]);
     $total_nfts = $stmt_count->fetch(PDO::FETCH_ASSOC)['total'];
     
-    // Obtener NFTs con información de si están vendidos
+    // =================================================================
+    // FIX: OBTENER LOS NFTs VENDIDOS (Método Robusto)
+    // Usamos INNER JOIN para contar solo los que tienen una entrada en LIBRARY.
+    // =================================================================
+    $stmt_vendidos = $conn->prepare("
+        SELECT COUNT(n.ID_NFT) as vendidos_count
+        FROM NFT n
+        INNER JOIN LIBRARY l ON n.ID_NFT = l.ID_NFT
+        WHERE n.SALESMAN_ID = ?
+    ");
+    $stmt_vendidos->execute([$id_user]);
+    
+    // Utilizamos fetchColumn() o fetch() simple, y luego obtenemos el valor
+    $nfts_vendidos = $stmt_vendidos->fetch(PDO::FETCH_ASSOC)['vendidos_count'] ?? 0;
+    
+    // El total de disponibles se calcula por resta
+    $nfts_disponibles = $total_nfts - $nfts_vendidos;
+    
+    // =================================================================
+    // Obtener NFTs para la PAGINACIÓN (Mantener Query Original)
+    // =================================================================
+    
     $stmt = $conn->prepare("
         SELECT 
             n.ID_NFT,
@@ -57,30 +76,21 @@ try {
             l.DATE_ACQUIRED AS FECHA_VENTA
         FROM NFT n
         LEFT JOIN LIBRARY l ON n.ID_NFT = l.ID_NFT
-        WHERE n.SALESMAN_ID = ?
+        WHERE n.SALESMAN_ID = :user_id 
         ORDER BY n.ID_NFT DESC
         LIMIT :limit OFFSET :offset
     ");
+    
+    // Bindings de paginación
+    $stmt->bindValue(':user_id', $id_user, PDO::PARAM_INT); // Nuevo binding
     $stmt->bindValue(':limit', $nfts_por_pagina, PDO::PARAM_INT);
     $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-    $stmt->execute([$id_user]);
+    // ¡Asegúrate de ejecutar con el parámetro $id_user!
+    $stmt->execute(); 
     $nfts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Contar vendidos y disponibles
-    $stmt_stats = $conn->prepare("
-        SELECT 
-            SUM(CASE WHEN l.ID_NFT IS NOT NULL THEN 1 ELSE 0 END) as vendidos,
-            SUM(CASE WHEN l.ID_NFT IS NULL THEN 1 ELSE 0 END) as disponibles
-        FROM NFT n
-        LEFT JOIN LIBRARY l ON n.ID_NFT = l.ID_NFT
-        WHERE n.SALESMAN_ID = ?
-    ");
-    $stmt_stats->execute([$id_user]);
-    $stats = $stmt_stats->fetch(PDO::FETCH_ASSOC);
-    $nfts_vendidos = $stats['vendidos'] ?? 0;
-    $nfts_disponibles = $stats['disponibles'] ?? 0;
-    
 } catch (PDOException $e) {
+    // Si hay un error, al menos muestra el mensaje
     $error_msg = "Error al obtener NFTs: " . $e->getMessage();
 }
 
@@ -438,7 +448,7 @@ $total_paginas = ceil($total_nfts / $nfts_por_pagina);
                         <span class="nft-status <?php echo $nft['ESTADO'] === 'VENDIDO' ? 'status-vendido' : 'status-disponible'; ?>">
                             <?php echo $nft['ESTADO']; ?>
                         </span>
-                        <img src="<?php echo htmlspecialchars($nft['url_imagen']); ?>" 
+                        <img src="<?php echo htmlspecialchars(string: 'nft/'.$nft['url_imagen']); ?>" 
                              alt="<?php echo htmlspecialchars($nft['TITLE']); ?>">
                         <div class="nft-card-content">
                             <h3><?php echo htmlspecialchars($nft['TITLE']); ?></h3>
