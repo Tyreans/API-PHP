@@ -1,9 +1,9 @@
 <?php
-// Configuración de la base de datos
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'oswifts');
-define('DB_USER', 'app_cliente');
-define('DB_PASS', 'CliPwdSegura456!');
+session_start();
+require_once("conexion.php");
+$id_user = $_SESSION['user_id'] ?? null;
+$rol = $_SESSION['rol'] ?? null;
+$conn = conectarDB($rol);
 
 // Configuración de carga de archivos
 define('UPLOAD_DIR', 'pfp/');
@@ -18,17 +18,9 @@ if (!file_exists(UPLOAD_DIR)) {
 
 $mensaje = '';
 $tipo_mensaje = '';
-$user_id = $_GET['id'] ?? 1; // Por defecto ID 1 para pruebas
-
 // Obtener información actual del usuario
 $usuario_actual = null;
 try {
-    $conn = new PDO(
-        "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
-        DB_USER,
-        DB_PASS,
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-    );
     
     $stmt = $conn->prepare("
         SELECT 
@@ -40,7 +32,7 @@ try {
         WHERE u.id_user = ?
     ");
 
-    $stmt->execute([$user_id]);
+    $stmt->execute([$id_user]);
     $usuario_actual = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$usuario_actual) {
@@ -78,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_picture'])) 
             $tipo_mensaje = 'error';
         } else {
             // Generar nombre único para el archivo
-            $new_filename = 'user_' . $user_id . '_' . uniqid() . '.' . $file_extension;
+            $new_filename = 'user_' . $id_user . '_' . uniqid() . '.' . $file_extension;
             $upload_path = UPLOAD_DIR . $new_filename;
             
             // Mover archivo a la carpeta de destino
@@ -86,10 +78,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_picture'])) 
                 try {
                     // Actualizar base de datos
                     $stmt = $conn->prepare("CALL sp_update_profile_picture(?, ?)");
-                    $stmt->execute([$user_id, $new_filename]);
+                    $stmt->execute([$id_user, $new_filename]);
                     
                     // Eliminar imagen anterior si existe y es diferente
                     if ($usuario_actual['profile_picture'] && 
+                        $usuario_actual['profile_picture'] != 'default.png' &&
                         $usuario_actual['profile_picture'] !== $new_filename &&
                         file_exists(UPLOAD_DIR . $usuario_actual['profile_picture'])) {
                         unlink(UPLOAD_DIR . $usuario_actual['profile_picture']);

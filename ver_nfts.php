@@ -1,18 +1,26 @@
 <?php
 session_start();
 require_once("conexion.php");
-
 $id_user = $_SESSION['user_id'] ?? null;
-$rol = $_SESSION['rol'] ?? 'invitado';
+$rol = $_SESSION['rol'] ?? null;
 $conn = conectarDB($rol);
 
-// Obtener username si está logueado
-$fila = null;
+$fila = null; // Imagen por defecto
+
 if ($id_user) {
-    $consultaSQL = "SELECT username FROM users WHERE ID_USER = ?";
+    $consultaSQL = "SELECT u.username, c.PROFILE_PIC_URL 
+                    FROM users u 
+                    LEFT JOIN CLIENTE c ON u.ID_USER = c.ID_USER 
+                    WHERE u.ID_USER = ?";
+    
     if ($stmt = $conn->prepare($consultaSQL)) {
         $stmt->execute([$id_user]);
         $fila = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($fila && !empty($fila['PROFILE_PIC_URL'])) {
+            $profile_pic = 'pfp/'.$fila['PROFILE_PIC_URL'];
+            echo $profile_pic;
+        }
     }
 }
 
@@ -93,6 +101,25 @@ $total_paginas = ceil($total_nfts / $nfts_por_pagina);
     <link href="csspag/cssamigo.css" rel="stylesheet">
     
     <style>
+        /* Estilos para la foto de perfil en el menú */
+        .profile-dropdown-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .profile-pic-small {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #fff;
+        }
+        
+        .profile-username {
+            font-weight: 600;
+        }
+
         /* Estilos adicionales para el filtro y cards */
         .filter-container {
             background: white;
@@ -281,33 +308,45 @@ $total_paginas = ceil($total_nfts / $nfts_por_pagina);
                         <li class="nav-item">
                             <a class="nav-link" href="#">Link</a>
                         </li>
+                        
+                        <!-- MENÚ DESPLEGABLE CON FOTO DE PERFIL -->
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Más
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-dark">
-                                <li><a class="dropdown-item" href="#">Action</a></li>
-                                <li><a class="dropdown-item" href="#">Another action</a></li>
-                                <li><hr class="dropdown-divider"></li>
-
-                                <?php if (isset($_SESSION['user_id'])): ?>
+                            <?php if (isset($_SESSION['user_id'])): ?>
+                                <!-- Usuario logueado: mostrar foto y nombre -->
+                                <a class="nav-link dropdown-toggle profile-dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <img src="<?php echo htmlspecialchars($profile_pic); ?>" 
+                                         alt="Perfil" 
+                                         class="profile-pic-small">
+                                    <span class="profile-username"><?php echo htmlspecialchars($fila['username']); ?></span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-dark">
                                     <li><a class="dropdown-item disabled" href="#">👋 Hola, <?php echo htmlspecialchars($fila['username']); ?></a></li>
-                                    <li><a class="dropdown-item" href="logout.php">Cerrar sesión</a></li>
-                                <?php else: ?>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="library.php">📚 Mi Biblioteca</a></li>
+                                    <li><a class="dropdown-item" href="recibos.php">🧾 Mis Recibos</a></li>
+                                    <li><a class="dropdown-item" href="update_pfp.php">🖼️ Cambiar Foto</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="logout.php">🚪 Cerrar sesión</a></li>
+                                </ul>
+                            <?php else: ?>
+                                <!-- Usuario no logueado: mostrar "Más" -->
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Más
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-dark">
                                     <li><a class="dropdown-item" href="login.php">Iniciar sesión</a></li>
                                     <li><a class="dropdown-item" href="new_user.php">Registrarse</a></li>
-                                <?php endif; ?>
-                            </ul>
+                                </ul>
+                            <?php endif; ?>
                         </li>
                     </ul>
-                    <form class="d-flex mt-3" role="search">
-                        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
-                        <button class="btn btn-success" type="submit">Search</button>
-                    </form>
+                    
+                    <!-- BARRA DE BÚSQUEDA ELIMINADA -->
                 </div>
             </div>
         </div>
         </nav>
+    
     </header>
 
     <main class="contenedor">
