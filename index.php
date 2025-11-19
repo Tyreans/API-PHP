@@ -3,11 +3,11 @@ session_start();
 require_once("conexion.php");
 $id_user = $_SESSION['user_id'] ?? null;
 $rol = $_SESSION['rol'] ?? null;
-$conn = conectarDB($rol);
 
-$fila = null; // Imagen por defecto
+$profile_pic = 'Imagenes/default_user.png';
 
 if ($id_user) {
+    $conn = conectarDB($rol);
     $consultaSQL = "SELECT u.username, c.PROFILE_PIC_URL 
                     FROM users u 
                     LEFT JOIN CLIENTE c ON u.ID_USER = c.ID_USER 
@@ -19,7 +19,6 @@ if ($id_user) {
         
         if ($fila && !empty($fila['PROFILE_PIC_URL'])) {
             $profile_pic = 'pfp/'.$fila['PROFILE_PIC_URL'];
-            echo $profile_pic;
         }
     }
 }
@@ -41,7 +40,15 @@ if ($id_user) {
     <link href="csspag/styles.css" rel="stylesheet">
 
      <style>
-        /* Estilos para la foto de perfil en el menú */
+        .hero {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 100px;
+            margin-bottom: 50px;
+            width: 100%;
+        }
+
         .profile-dropdown-toggle {
             display: flex;
             align-items: center;
@@ -56,8 +63,106 @@ if ($id_user) {
             border: 2px solid #fff;
         }
         
-        .profile-username {
-            font-weight: 600;
+        .profile-username { font-weight: 600; }
+        
+        .carrusel {
+            width: 600px;
+            height: 400px;
+            overflow: hidden;
+            position: relative;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .carrusel-inner {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            left: 0;
+        }
+
+        .carrusel-item {
+            min-width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000; /* Fondo negro por si la imagen no carga */
+        }
+        
+        /* Ajuste para imágenes del carrusel */
+        .carrusel-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .btn-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 18px;
+            z-index: 10;
+            border-radius: 5px;
+        }
+        .btn-nav:hover { background: rgba(0,0,0,0.8); }
+        .prev { left: 10px; }
+        .next { right: 10px; }
+        
+        .contenedor {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* --- ESTILOS DEL FLYER --- */
+        .flyer {
+            width: 300px; /* Ancho fijo del flyer */
+            height: 400px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            position: relative;
+            flex-shrink: 0; /* Evita que el flyer se encoja */
+        }
+        .flyer img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .flyer-content {
+            padding: 15px;
+            text-align: center;
+        }
+        .flyer h2 { margin: 10px 0; font-size: 1.4em; color: #333; }
+        .flyer p { font-size: 0.95em; color: #555; }
+        .flyer:hover { transform: scale(1.05); }
+        
+        .extra-info {
+            display: none;
+            padding: 10px;
+            background: #fffae6;
+            border-top: 1px solid #ddd;
+            font-size: 0.9em;
+            color: #333;
+        }
+
+        /* --- NUEVO: Contenedor para poner Flyers y Formulario en línea --- */
+        
+
+        .formulario {
+            flex-grow: 1; /* El formulario ocupa el espacio disponible */
+            max-width: 600px; /* Pero no más de 600px */
+            min-width: 300px;
         }
     </style>
 </head>
@@ -87,10 +192,8 @@ if ($id_user) {
                             <a class="nav-link" href="#">Link</a>
                         </li>
                         
-                        <!-- MENÚ DESPLEGABLE CON FOTO DE PERFIL -->
                         <li class="nav-item dropdown">
                             <?php if (isset($_SESSION['user_id'])): ?>
-                                <!-- Usuario logueado: mostrar foto y nombre -->
                                 <a class="nav-link dropdown-toggle profile-dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <img src="<?php echo htmlspecialchars($profile_pic); ?>" 
                                          alt="Perfil" 
@@ -107,7 +210,6 @@ if ($id_user) {
                                     <li><a class="dropdown-item" href="logout.php">🚪 Cerrar sesión</a></li>
                                 </ul>
                             <?php else: ?>
-                                <!-- Usuario no logueado: mostrar "Más" -->
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     Más
                                 </a>
@@ -118,27 +220,82 @@ if ($id_user) {
                             <?php endif; ?>
                         </li>
                     </ul>
-                    
-                    <!-- BARRA DE BÚSQUEDA ELIMINADA -->
                 </div>
             </div>
         </div>
         </nav>
 
         <section class="hero">
-            <div class="contenido-hero">
-                <div class="ubicacion sombra">
-                    <img src="Imagenes/neon-oswi.png" class="img-neonOswi">
-                    <div class="descripciones-Header">
-                        <h2>Oswi-FTS</h2>
-                        <h3>Cyber-Oswi</h3>
-                        <p>Edición limitada de Oswi-FT's, con <br>
-                            cyber-oswi mantente actualizado</p>
+            <div class="carrusel">
+                <div class="carrusel-inner">
+                    <div class="carrusel-item">
+                        <img src="Imagenes/nfts/oswi_cyberpunk.png" alt="Slide 1">
+                    </div>
+                    <div class="carrusel-item">
+                        <img src="Imagenes/nfts/ulloa_port.png" alt="Slide 2">
+                    </div>
+                    <div class="carrusel-item">
+                        <img src="Imagenes/nfts/oswi_port.png" alt="Slide 3">
                     </div>
                 </div>
+
+                <button class="btn-nav prev" id="anterior">&#10094;</button>
+                <button class="btn-nav next" id="siguiente">&#10095;</button>
             </div>
         </section>
-    
+        
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
+            $(document).ready(function() {
+                // --- LÓGICA DE FLYERS ---
+                $(".flyer").click(function(){
+                    $(this).find(".extra-info").slideToggle();
+                });
+
+                // --- LÓGICA DEL CARRUSEL ---
+                var $carruselInner = $('.carrusel-inner');
+                var $items = $('.carrusel-item');
+                var totalItems = $items.length;
+                var currentIndex = 0;
+
+                function moverCarrusel() {
+                    var position = currentIndex * -100;
+                    $carruselInner.animate({
+                        'left': position + '%'
+                    }, 500);
+                }
+
+                $('#siguiente').click(function() {
+                    if (currentIndex < totalItems - 1) {
+                        currentIndex++;
+                    } else {
+                        currentIndex = 0;
+                    }
+                    moverCarrusel();
+                });
+
+                $('#anterior').click(function() {
+                    if (currentIndex > 0) {
+                        currentIndex--;
+                    } else {
+                        currentIndex = totalItems - 1;
+                    }
+                    moverCarrusel();
+                });
+
+                var autoPlay = setInterval(function() {
+                    $('#siguiente').click();
+                }, 3000);
+
+                $('.carrusel').hover(function() {
+                    clearInterval(autoPlay);
+                }, function() {
+                    autoPlay = setInterval(function() {
+                        $('#siguiente').click();
+                    }, 3000);
+                });
+            });
+        </script>
     </header>
 
     <main class="contenedor sombra">
@@ -147,57 +304,52 @@ if ($id_user) {
                 <img src="Imagenes/nfts/oswi_nft1.png" class="nft-img">
                 <div class="nft-info">
                     <h3>La sonrisa que rompió a C++</h3>
-                    <p>Obtenga ingresos usando la imagen del ingeniero Oswaldo <br><br><br> 
-                        Volumen Total: 999999 Pejecoins <br>
-                        Precio Mínimo 8567 USD<br>
-                        Precio de Venta Unitario 100 LOKA<br>
-                        Total de unidades emitidas 10
-                    </p>
+                    <p>Precio Mínimo 8567 USD</p>
                 </div>
                 <div class="button-info-nfts-container">
-                    <a href="coleccionsonrisa.php" class="btn">Página de la colección</a>
-                    <a href="#" class="btn">Más descripciones</a>
+                    <a href="coleccionsonrisa.php" class="btn">Ver colección</a>
                 </div>
             </div>
             <div class="nft">
                 <img src="Imagenes/nfts/ulloa_port.png" class="nft-img">
                 <div class="nft-info">
                     <h3>El Amigo de los Mundos</h3>
-                    <p>Sea educado y aprenda a saludar a Edmundo y Raymundo<br><br><br> 
-                        Volumen Total: 999999 Pejecoins <br>
-                        Precio Mínimo 8567 USD<br>
-                        Precio de Venta Unitario 100 LOKA<br>
-                        Total de unidades emitidas 10
-                    </p>
+                    <p>Precio Mínimo 8567 USD</p>
                 </div>
                 <div class="button-info-nfts-container">
-                    <a href="coleccionamigo.php" class="btn">Página de la colección</a>
-                    <a href="#" class="btn">Más descripciones</a>
+                    <a href="coleccionamigo.php" class="btn">Ver colección</a>
                 </div>
             </div>
             <div class="nft">
                 <img src="Imagenes/nfts/oswi_port.png" class="nft-img">
                 <div class="nft-info">
                     <h3>El brillo del mañana</h3>
-                    <p>Descabellados misterios del futuro pasado<br><br><br> 
-                        Volumen Total: 999999 Pejecoins <br>
-                        Precio Mínimo 8567 USD<br>
-                        Precio de Venta Unitario 100 LOKA<br>
-                        Total de unidades emitidas 10
-                    </p>
+                    <p>Precio Mínimo 8567 USD</p>
                 </div>
                 <div class="button-info-nfts-container">
-                    <a href="coleccionbrillo.php" class="btn">Página de la colección</a>
-                    <a href="#" class="btn">Más descripciones</a>
+                    <a href="coleccionbrillo.php" class="btn">Ver colección</a>
                 </div>
             </div>
         </section>
     
-        <section> 
+        <section class="seccion-contacto"> 
+            
+            <div class="flyer">
+                <img src="Imagenes/fl1.jpg" alt="Flyer">
+                <div class="flyer-content">
+                    <h2>Evento Especial</h2>
+                    <p>¡No te pierdas nuestras ofertas!</p>
+                </div>
+                <div class="extra-info">
+                    📍 Lugar: Auditorio A<br>
+                    🎟 Descuento: 20%<br>
+                    ☎ Info: 555-000-1111
+                </div>
+            </div>
+
             <form class="formulario">
                 <fieldset>
                     <legend>Contáctanos llenando todos los campos</legend>
-
                     <div class="contenedor-campos">
                         <div class="campo">
                             <label>Nombre</label>
@@ -216,19 +368,30 @@ if ($id_user) {
                             <textarea class="input-text"></textarea>
                         </div>
                     </div>
-
                     <div class="alinear-derecha flex">
                         <input class="boton w-sm-100" type="submit" value="Enviar">
                     </div>
-                    
                 </fieldset>
             </form>
+
+            <div class="flyer">
+                <img src="Imagenes/fl1.png" alt="Flyer">
+                <div class="flyer-content">
+                    <h2>Próximo Concierto</h2>
+                    <p>Sábado a las 8 PM.</p>
+                </div>
+                <div class="extra-info">
+                    📍 Lugar: Auditorio Central<br>
+                    🎟 Entrada: $200 MXN<br>
+                    ☎ Reservas: 555-123-4567
+                </div>
+            </div>
+
         </section>
     </main>
 
     <footer class="footer">
         <p>Todos los derechos reservados. Rodrigo Yahir Hernandez Caro Freelancer</p>        
     </footer>
-
 </body>
 </html>
