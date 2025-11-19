@@ -33,6 +33,11 @@ $offset = ($pagina_actual - 1) * $nfts_por_pagina;
 $nfts = [];
 $total_nfts = 0;
 
+// INICIALIZAR VARIABLES PARA EVITAR WARNING
+$nfts_vendidos = 0;
+$nfts_disponibles = 0;
+
+
 try {
     // Contar total de NFTs del vendedor (ESTO YA FUNCIONA)
     $stmt_count = $conn->prepare("SELECT COUNT(*) as total FROM NFT WHERE SALESMAN_ID = ?");

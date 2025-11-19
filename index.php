@@ -304,30 +304,48 @@ if ($id_user) {
                 <img src="Imagenes/nfts/oswi_nft1.png" class="nft-img">
                 <div class="nft-info">
                     <h3>La sonrisa que rompió a C++</h3>
-                    <p>Precio Mínimo 8567 USD</p>
+                    <p>Obtenga ingresos usando la imagen del ingeniero Oswaldo <br><br><br> 
+                        Volumen Total: 999999 Pejecoins <br>
+                        Precio Mínimo 8567 USD<br>
+                        Precio de Venta Unitario 100 LOKA<br>
+                        Total de unidades emitidas 10
+                    </p>
                 </div>
                 <div class="button-info-nfts-container">
-                    <a href="coleccionsonrisa.php" class="btn">Ver colección</a>
+                    <a href="coleccionsonrisa.php" class="btn">Página de la colección</a>
+                    <a href="#" class="btn">Más descripciones</a>
                 </div>
             </div>
             <div class="nft">
                 <img src="Imagenes/nfts/ulloa_port.png" class="nft-img">
                 <div class="nft-info">
                     <h3>El Amigo de los Mundos</h3>
-                    <p>Precio Mínimo 8567 USD</p>
+                    <p>Sea educado y aprenda a saludar a Edmundo y Raymundo<br><br><br> 
+                        Volumen Total: 999999 Pejecoins <br>
+                        Precio Mínimo 8567 USD<br>
+                        Precio de Venta Unitario 100 LOKA<br>
+                        Total de unidades emitidas 10
+                    </p>
                 </div>
                 <div class="button-info-nfts-container">
-                    <a href="coleccionamigo.php" class="btn">Ver colección</a>
+                    <a href="coleccionamigo.php" class="btn">Página de la colección</a>
+                    <a href="#" class="btn">Más descripciones</a>
                 </div>
             </div>
             <div class="nft">
                 <img src="Imagenes/nfts/oswi_port.png" class="nft-img">
                 <div class="nft-info">
                     <h3>El brillo del mañana</h3>
-                    <p>Precio Mínimo 8567 USD</p>
+                    <p>Descabellados misterios del futuro pasado<br><br><br> 
+                        Volumen Total: 999999 Pejecoins <br>
+                        Precio Mínimo 8567 USD<br>
+                        Precio de Venta Unitario 100 LOKA<br>
+                        Total de unidades emitidas 10
+                    </p>
                 </div>
                 <div class="button-info-nfts-container">
-                    <a href="coleccionbrillo.php" class="btn">Ver colección</a>
+                    <a href="coleccionbrillo.php" class="btn">Página de la colección</a>
+                    <a href="#" class="btn">Más descripciones</a>
                 </div>
             </div>
         </section>
