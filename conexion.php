@@ -43,7 +43,7 @@ function conectarDB($rol) {
     } catch (\PDOException $e) {
         // En un entorno de producción, nunca muestres el error de conexión directo al usuario.
         // En su lugar, registra el error y muestra un mensaje genérico.
-        die("Error de conexión a la base de datos: " . $e->getMessage());
+        throw new Exception("Error de conexión a la base de datos: " . $e->getMessage());
     }
 }
 

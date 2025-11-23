@@ -24,67 +24,56 @@ if ($id_user) {
     }
 }
 
-// ============================================
-// PARÁMETROS DE FILTRO Y PAGINACIÓN
-// ============================================
-$tag_filtro = $_GET['tag'] ?? ''; // Tag seleccionado (vacío = todos)
-$pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
-$pagina_actual = max(1, $pagina_actual); // Mínimo página 1
-$nfts_por_pagina = 12; // Docena
-$offset = ($pagina_actual - 1) * $nfts_por_pagina;
+    // ============================================
+    // PARÁMETROS DE FILTRO Y PAGINACIÓN
+    // ============================================
+    $tag_filtro = $_GET['tag'] ?? ''; // Tag recibido desde el buscador o por URL
+    $pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+    $pagina_actual = max(1, $pagina_actual);
+    $nfts_por_pagina = 12;
+    $offset = ($pagina_actual - 1) * $nfts_por_pagina;
 
-// ============================================
-// OBTENER TODOS LOS TAGS DISPONIBLES
-// ============================================
-$tags_disponibles = [];
-try {
-    $stmt_tags = $conn->query("SELECT DISTINCT TAG_NAME FROM TAGS ORDER BY TAG_NAME");
-    $tags_disponibles = $stmt_tags->fetchAll(PDO::FETCH_COLUMN);
-} catch (PDOException $e) {
-    // Silenciar error
-}
+    // ============================================
+    // OBTENER NFTs SEGÚN FILTRO
+    // ============================================
+    $nfts = [];
+    $total_nfts = 0;
 
-// ============================================
-// OBTENER NFTs SEGÚN FILTRO
-// ============================================
-$nfts = [];
-$total_nfts = 0;
+    try {
+        if (!empty($tag_filtro)) {
+            // Filtrar por tag usando el procedure
+            $stmt = $conn->prepare("CALL sp_filtrar_nfts_por_tag(?)");
+            $stmt->execute([$tag_filtro]);
+            $nfts_completos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $stmt->closeCursor();
 
-try {
-    if (!empty($tag_filtro)) {
-        // Filtrar por tag usando el procedure
-        $stmt = $conn->prepare("CALL sp_filtrar_nfts_por_tag(?)");
-        $stmt->execute([$tag_filtro]);
-        $nfts_completos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $stmt->closeCursor();
-        
-        // Calcular total y aplicar paginación manualmente
-        $total_nfts = count($nfts_completos);
-        $nfts = array_slice($nfts_completos, $offset, $nfts_por_pagina);
-        
-    } else {
-        // Sin filtro: contar total primero
-        $stmt_count = $conn->query("SELECT COUNT(DISTINCT ID_NFT) as total FROM vista_nfts_disponibles");
-        $total_nfts = $stmt_count->fetch(PDO::FETCH_ASSOC)['total'];
-        
-        // Obtener NFTs con paginación
-        $stmt = $conn->prepare("
-            SELECT DISTINCT ID_NFT, TITLE, ABSTRACT, PRICE, url_imagen, VENDEDOR_NOMBRE
-            FROM vista_nfts_disponibles
-            GROUP BY ID_NFT
-            LIMIT :limit OFFSET :offset
-        ");
-        $stmt->bindValue(':limit', $nfts_por_pagina, PDO::PARAM_INT);
-        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-        $stmt->execute();
-        $nfts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            // Total encontrado + paginación manual
+            $total_nfts = count($nfts_completos);
+            $nfts = array_slice($nfts_completos, $offset, $nfts_por_pagina);
+
+        } else {
+            // Sin filtro
+            $stmt_count = $conn->query("SELECT COUNT(DISTINCT ID_NFT) as total FROM vista_nfts_disponibles");
+            $total_nfts = $stmt_count->fetch(PDO::FETCH_ASSOC)['total'];
+
+            $stmt = $conn->prepare("
+                SELECT DISTINCT ID_NFT, TITLE, ABSTRACT, PRICE, url_imagen, VENDEDOR_NOMBRE
+                FROM vista_nfts_disponibles
+                GROUP BY ID_NFT
+                LIMIT :limit OFFSET :offset
+            ");
+            $stmt->bindValue(':limit', $nfts_por_pagina, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+            $stmt->execute();
+
+            $nfts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+    } catch (PDOException $e) {
+        $error_msg = "Error al obtener NFTs: " . $e->getMessage();
     }
-} catch (PDOException $e) {
-    $error_msg = "Error al obtener NFTs: " . $e->getMessage();
-}
 
-// Calcular total de páginas
-$total_paginas = ceil($total_nfts / $nfts_por_pagina);
+    // Total de páginas
+    $total_paginas = ceil($total_nfts / $nfts_por_pagina);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -99,7 +88,7 @@ $total_paginas = ceil($total_nfts / $nfts_por_pagina);
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <link rel="preload" href="csspag/cssamigo.css" as="style">
     <link href="csspag/cssamigo.css" rel="stylesheet">
-    
+    <link rel="stylesheet" href="searchbar.css">
     <style>
         /* Estilos para la foto de perfil en el menú */
         .profile-dropdown-toggle {
@@ -348,28 +337,11 @@ $total_paginas = ceil($total_nfts / $nfts_por_pagina);
         </nav>
     
     </header>
+    <br><br><br>
+    <?php include 'searchbar.ini.php'?>
 
+    
     <main class="contenedor">
-        <!-- Filtro de Tags -->
-        <div class="filter-container">
-            <form method="GET" action="ver_nfts.php" class="filter-form">
-                <label for="tag" style="font-weight: 600; color: #333;">Filtrar por tag:</label>
-                <select name="tag" id="tag">
-                    <option value="">Todos los NFTs</option>
-                    <?php foreach ($tags_disponibles as $tag): ?>
-                        <option value="<?php echo htmlspecialchars($tag); ?>" 
-                                <?php echo ($tag_filtro === $tag) ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($tag); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-                <button type="submit">Filtrar</button>
-                <?php if (!empty($tag_filtro)): ?>
-                    <a href="ver_nfts" class="filter-form button btn-clear" style="padding: 10px 25px; text-decoration: none; border-radius: 5px;">Limpiar filtro</a>
-                <?php endif; ?>
-            </form>
-        </div>
-
         <!-- Información de resultados -->
         <div class="results-info">
             <?php if (!empty($tag_filtro)): ?>
